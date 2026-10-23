@@ -187,7 +187,7 @@ class _AIChatTab(ttk.Frame):
 
         tk.Label(
             title_block,
-            text="Powered by Google Gemma 4 31B  •  Reads live detection data",
+            text="Reads live detection data",
             bg=C["surface"], fg=C["text_dim"],
             font=("Segoe UI", 8), anchor="w",
         ).pack(anchor="w")

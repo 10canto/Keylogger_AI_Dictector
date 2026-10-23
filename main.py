@@ -44,7 +44,7 @@ from typing import Dict, List, Optional
 # ---------------------------------------------------------------------------
 # Ensure project root is on sys.path when run directly
 # ---------------------------------------------------------------------------
-from src.paths import get_user_data_root, DEFAULT_MODEL_PATH, DEFAULT_DB_PATH, DEFAULT_LOG_FILE, DEFAULT_TYPING_BASELINE_PATH
+from src.paths import get_user_data_root, DEFAULT_MODEL_PATH, DEFAULT_DB_PATH, DEFAULT_LOG_FILE, DEFAULT_TYPING_BASELINE_PATH, DEFAULT_MOUSE_BASELINE_PATH
 PROJECT_ROOT = get_user_data_root()
 
 from src.monitor          import ProcessMonitor, ProcessSnapshot
@@ -452,6 +452,7 @@ def main() -> int:
             behavioral_engine = BehavioralAnalysisEngine(
                 db_store=typing_store,
                 baseline_path=DEFAULT_TYPING_BASELINE_PATH,
+                mouse_baseline_path=DEFAULT_MOUSE_BASELINE_PATH,
             )
             behavioral_engine.set_alert_context_provider(
                 pipeline.get_background_threat_context

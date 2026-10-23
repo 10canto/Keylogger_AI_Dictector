@@ -4,8 +4,8 @@
     "suspicious",
     "malicious"
   ],
-  "version": "1.0",
-  "model_type": "gb",
+  "version": "personalized-1.0",
+  "model_type": "rf",
   "features": [
     "hook_api_present",
     "has_ll_keyboard_hook",
@@ -34,5 +34,14 @@
     "has_kernel_hooks",
     "uses_raw_input_api"
   ],
-  "trained_at": "2026-09-19T13:06:29Z"
+  "trained_at": "2026-10-23T11:26:10Z",
+  "model_type_label": "personalized",
+  "real_safe_samples": 208,
+  "synthetic_malicious_samples": 208,
+  "synthetic_suspicious_samples": 208,
+  "total_samples": 804,
+  "accuracy": 0.9752,
+  "cv_f1_mean": 0.9771,
+  "cv_f1_std": 0.0146,
+  "source_csv": "C:\\Users\\Anto\\Downloads\\Keylogger-main\\Keylogger-main\\data\\combined_safe_behavior_20261023_165550.csv"
 }

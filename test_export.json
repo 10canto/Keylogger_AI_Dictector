@@ -1,0 +1,140 @@
+{
+  "metadata": {
+    "exported_at": "2026-10-22T07:34:39Z",
+    "total_detections": 10,
+    "tool": "KeyGuard AI",
+    "sha256": "c86c058084b5508f6d2dd89ef5933f6177c9f44b2f01912c99ab6fd57b1c38ba"
+  },
+  "detections": [
+    {
+      "id": 1,
+      "pid": 3444,
+      "process_name": "EpicGamesLauncher.exe",
+      "exe_path": "C:\\Program Files\\Epic Games\\Launcher\\Portal\\Binaries\\Win64\\EpicGamesLauncher.exe",
+      "risk_level": "suspicious",
+      "score": 0.5499999999999999,
+      "confidence": 0.5499999999999999,
+      "reasons": "[\"Keyboard hook APIs loaded (user32.dll)\", \"Hooks keyboard input with no visible window\", \"Keyboard hook combined with active network connections\", \"Registered in Windows startup (Run key)\", \"3 hook-related DLLs loaded simultaneously\"]",
+      "model_version": "heuristic",
+      "detected_at": 1791625418.9450176,
+      "actioned": 0
+    },
+    {
+      "id": 2,
+      "pid": 12824,
+      "process_name": "WidgetService.exe",
+      "exe_path": "C:\\Program Files\\WindowsApps\\Microsoft.WidgetsPlatformRuntime_1.6.19.0_x64__8wekyb3d8bbwe\\WidgetService\\WidgetService.exe",
+      "risk_level": "suspicious",
+      "score": 0.35,
+      "confidence": 0.65,
+      "reasons": "[\"Keyboard hook APIs loaded (user32.dll)\", \"Hooks keyboard input with no visible window\"]",
+      "model_version": "heuristic",
+      "detected_at": 1791625418.9455872,
+      "actioned": 0
+    },
+    {
+      "id": 3,
+      "pid": 15804,
+      "process_name": "KeyloggerDetector.exe",
+      "exe_path": "C:\\Program Files (x86)\\KeyloggerDetector\\KeyloggerDetector.exe",
+      "risk_level": "suspicious",
+      "score": 0.35,
+      "confidence": 0.65,
+      "reasons": "[\"Keyboard hook APIs loaded (user32.dll)\", \"Hooks keyboard input with no visible window\"]",
+      "model_version": "heuristic",
+      "detected_at": 1791625418.9457276,
+      "actioned": 0
+    },
+    {
+      "id": 4,
+      "pid": 25872,
+      "process_name": "NVIDIA Web Helper.exe",
+      "exe_path": "C:\\Program Files (x86)\\NVIDIA Corporation\\NvNode\\NVIDIA Web Helper.exe",
+      "risk_level": "suspicious",
+      "score": 0.4,
+      "confidence": 0.6,
+      "reasons": "[\"Keyboard hook APIs loaded (user32.dll)\", \"Hooks keyboard input with no visible window\", \"Keyboard hook combined with active network connections\", \"4 hook-related DLLs loaded simultaneously\"]",
+      "model_version": "heuristic",
+      "detected_at": 1791625418.9465885,
+      "actioned": 0
+    },
+    {
+      "id": 5,
+      "pid": 26036,
+      "process_name": "OneDrive.Sync.Service.exe",
+      "exe_path": "C:\\Program Files\\Microsoft OneDrive\\26.178.0913.0007\\OneDrive.Sync.Service.exe",
+      "risk_level": "suspicious",
+      "score": 0.44999999999999996,
+      "confidence": 0.55,
+      "reasons": "[\"Keyboard hook APIs loaded (user32.dll)\", \"Hooks keyboard input with no visible window\", \"Keyboard hook combined with active network connections\", \"Registered in Windows startup (Run key)\"]",
+      "model_version": "heuristic",
+      "detected_at": 1791625418.9466038,
+      "actioned": 0
+    },
+    {
+      "id": 6,
+      "pid": 31876,
+      "process_name": "OneDrive.exe",
+      "exe_path": "C:\\Program Files\\Microsoft OneDrive\\OneDrive.exe",
+      "risk_level": "suspicious",
+      "score": 0.44999999999999996,
+      "confidence": 0.55,
+      "reasons": "[\"Keyboard hook APIs loaded (user32.dll)\", \"Hooks keyboard input with no visible window\", \"Keyboard hook combined with active network connections\", \"Registered in Windows startup (Run key)\"]",
+      "model_version": "heuristic",
+      "detected_at": 1791625418.9469879,
+      "actioned": 0
+    },
+    {
+      "id": 7,
+      "pid": 31900,
+      "process_name": "GoogleDriveFS.exe",
+      "exe_path": "C:\\Program Files\\Google\\Drive File Stream\\132.0.0.0\\GoogleDriveFS.exe",
+      "risk_level": "suspicious",
+      "score": 0.44999999999999996,
+      "confidence": 0.55,
+      "reasons": "[\"Keyboard hook APIs loaded (user32.dll)\", \"Hooks keyboard input with no visible window\", \"Keyboard hook combined with active network connections\", \"Registered in Windows startup (Run key)\"]",
+      "model_version": "heuristic",
+      "detected_at": 1791625418.9469995,
+      "actioned": 0
+    },
+    {
+      "id": 8,
+      "pid": 34972,
+      "process_name": "MicrosoftStartFeedProvider.exe",
+      "exe_path": "C:\\Program Files\\WindowsApps\\Microsoft.StartExperiencesApp_1.380.2.0_x64__8wekyb3d8bbwe\\MicrosoftStartFeedProvider\\MicrosoftStartFeedProvider.exe",
+      "risk_level": "suspicious",
+      "score": 0.35,
+      "confidence": 0.65,
+      "reasons": "[\"Keyboard hook APIs loaded (user32.dll)\", \"Hooks keyboard input with no visible window\"]",
+      "model_version": "heuristic",
+      "detected_at": 1791625418.9471717,
+      "actioned": 0
+    },
+    {
+      "id": 9,
+      "pid": 10320,
+      "process_name": "EOSOverlayRenderer-Win64-Shipping.exe",
+      "exe_path": "C:\\Program Files (x86)\\Epic Games\\Epic Online Services\\managedArtifacts\\98bc04bc842e4906993fd6d6644ffb8d\\EOSOverlayRenderer-Win64-Shipping.exe",
+      "risk_level": "suspicious",
+      "score": 0.38,
+      "confidence": 0.62,
+      "reasons": "[\"Keyboard hook APIs loaded (user32.dll)\", \"Hooks keyboard input with no visible window\", \"Keyboard hook combined with active network connections\"]",
+      "model_version": "heuristic",
+      "detected_at": 1791625449.930866,
+      "actioned": 0
+    },
+    {
+      "id": 10,
+      "pid": 13692,
+      "process_name": "CrossDeviceService.exe",
+      "exe_path": "C:\\Program Files\\WindowsApps\\MicrosoftWindows.CrossDevice_1.26082.74.0_x64__cw5n1h2txyewy\\CrossDeviceService.exe",
+      "risk_level": "suspicious",
+      "score": 0.38,
+      "confidence": 0.62,
+      "reasons": "[\"Keyboard hook APIs loaded (user32.dll)\", \"Hooks keyboard input with no visible window\", \"Keyboard hook combined with active network connections\"]",
+      "model_version": "heuristic",
+      "detected_at": 1791625449.931002,
+      "actioned": 0
+    }
+  ]
+}

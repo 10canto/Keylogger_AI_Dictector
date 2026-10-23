@@ -40,6 +40,7 @@ from __future__ import annotations
 import enum
 import logging
 import os
+import sys
 import threading
 import time
 from dataclasses import dataclass, field
@@ -63,8 +64,8 @@ from .paths import DEFAULT_MODEL_PATH, DEFAULT_MODEL_PATH_PERSONALIZED
 # If this file exists it takes priority over the generic model above.
 PERSONALIZED_MODEL_PATH = DEFAULT_MODEL_PATH_PERSONALIZED
 
-SUSPICIOUS_THRESHOLD: float = 0.35
-MALICIOUS_THRESHOLD: float  = 0.70
+SUSPICIOUS_THRESHOLD: float = 0.50  # Raised from 0.35 to reduce false positives
+MALICIOUS_THRESHOLD: float  = 0.90  # Raised from 0.70 - only flag extreme threats
 
 # How often (seconds) to poll for a changed model file on disk
 MODEL_RELOAD_INTERVAL: float = 60.0
@@ -291,14 +292,29 @@ class KeyloggerClassifier:
             try:
                 proba = model.predict_proba(X)   # shape (N, n_classes)
                 for fv, prob_row in zip(feature_vectors, proba):
-                    score, confidence = self._proba_to_score(prob_row, labels)
-                    risk = _score_to_risk(score)
+                    # Get ML score
+                    ml_score, confidence = self._proba_to_score(prob_row, labels)
+                    
+                    # Get heuristic score
+                    heuristic = _heuristic_score(fv.features)
+                    
+                    # ENSEMBLE: Combine ML + Heuristic
+                    if heuristic >= 0.60:
+                        # Strong heuristic signal - take maximum
+                        final_score = max(ml_score, heuristic)
+                    else:
+                        # Weak heuristic - weighted average (80% ML, 20% heuristic)
+                        final_score = 0.80 * ml_score + 0.20 * heuristic
+                    
+                    final_score = float(np.clip(final_score, 0.0, 1.0))
+                    risk = _score_to_risk(final_score)
+                    
                     results.append(ClassificationResult(
                         pid=fv.pid,
                         name=fv.name,
                         exe=fv.exe,
                         risk_level=risk,
-                        score=score,
+                        score=final_score,
                         confidence=confidence,
                         reasons=fv.active_indicators,
                         model_version=version,
@@ -351,6 +367,13 @@ class KeyloggerClassifier:
                 return True
         return self._try_load(self._model_path, personalized=False)
 
+    def reload_model(self) -> bool:
+        """
+        Force a reload of the main model (non-personalized).
+        Used when auto-training replaces the main model file.
+        """
+        return self._try_load(self._model_path, personalized=False)
+
     # ------------------------------------------------------------------
     # Internal
     # ------------------------------------------------------------------
@@ -364,6 +387,14 @@ class KeyloggerClassifier:
         personalized: Whether this is a personalized model file.
         """
         target = Path(path) if path else self._model_path
+        
+        # DEBUG: Log the path being checked
+        logger.info(f"[DEBUG] Attempting to load model from: {target}")
+        logger.info(f"[DEBUG] Path exists: {target.exists()}")
+        logger.info(f"[DEBUG] Parent exists: {target.parent.exists()}")
+        if hasattr(sys, '_MEIPASS'):
+            logger.info(f"[DEBUG] Running frozen, _MEIPASS: {sys._MEIPASS}")
+        
         if not target.exists():
             logger.info(
                 "No model file found at %s — using heuristic scorer.",
@@ -432,8 +463,26 @@ class KeyloggerClassifier:
             return score, max(score, 1.0 - score)
 
         try:
+            # Get ML model prediction
             proba = model.predict_proba(features.reshape(1, -1))[0]
-            return self._proba_to_score(proba, labels)
+            ml_score, confidence = self._proba_to_score(proba, labels)
+            
+            # Get heuristic score
+            heuristic = _heuristic_score(features)
+            
+            # ENSEMBLE: Combine ML + Heuristic
+            # Strategy: ML primary with heuristic boost
+            # If heuristic detects strong signals (≥0.60), boost the final score
+            if heuristic >= 0.60:
+                # Strong heuristic signal - take the maximum
+                final_score = max(ml_score, heuristic)
+            else:
+                # Weak heuristic - weighted average (80% ML, 20% heuristic)
+                final_score = 0.80 * ml_score + 0.20 * heuristic
+            
+            final_score = float(np.clip(final_score, 0.0, 1.0))
+            
+            return final_score, confidence
         except Exception as exc:
             logger.warning("Model inference error: %s — using heuristic.", exc)
             score = _heuristic_score(features)

@@ -237,7 +237,7 @@ def generate_dataset(
 
 def train(
     df: pd.DataFrame,
-    model_type: str = "gb",
+    model_type: str = "rf",
     n_estimators: int = 300,
     test_size: float = 0.20,
     cv_folds: int = 5,
@@ -395,8 +395,10 @@ def save_model(
 MIN_REAL_SAMPLES: int = 50
 
 # Ratio: for every 1 real SAFE sample, generate this many synthetic MALICIOUS.
-# Keeping malicious ≥ safe prevents the model from being trivially biased.
-SYNTHETIC_MALICIOUS_RATIO: int = 3
+# Set to 0 to disable synthetic malicious generation (use anomaly detection instead).
+# Higher values (1-3) create more balanced datasets but risk false positives.
+# Set to 0.25 = minimal malicious samples, just enough for 3-class model.
+SYNTHETIC_MALICIOUS_RATIO: int = 1  # Back to 1:1 for now
 
 
 def load_and_validate_real_csv(csv_path: Path) -> pd.DataFrame:
@@ -578,7 +580,7 @@ def save_model_with_metadata(
 def train_personalized(
     csv_path: Path,
     output_path: Optional[Path] = None,
-    model_type: str = "gb",
+    model_type: str = "rf",
     n_estimators: int = 300,
     cv_folds: int = 5,
     seed: int = 42,
@@ -719,8 +721,8 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     p.add_argument("--samples", type=int, default=3000,
                    help="Total synthetic samples to generate (split 50/25/25 safe/suspicious/malicious). Default: 3000")
-    p.add_argument("--model-type", choices=["gb", "rf"], default="gb",
-                   help="gb=GradientBoosting (default), rf=RandomForest")
+    p.add_argument("--model-type", choices=["gb", "rf"], default="rf",
+                   help="rf=RandomForest (default), gb=GradientBoosting")
     p.add_argument("--estimators", type=int, default=300,
                    help="Number of trees/estimators. Default: 300")
     p.add_argument("--cv-folds", type=int, default=5,

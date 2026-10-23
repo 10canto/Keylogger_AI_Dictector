@@ -374,12 +374,17 @@ class _LiveAlertsTab(ttk.Frame):
         if not sel or not self._selected:
             return
         v = self._tree.item(sel[0])["values"]
+        result = self._selected.result
         _DetailPopup(self, {
-            "pid": v[1], "process_name": v[2], "risk_level": v[3],
-            "score": float(str(v[4]).rstrip("%")) / 100,
-            "confidence": 0.0, "detected_at": time.time(),
-            "actioned": False,
-            "reasons": self._selected.result.reasons,
+            "pid": result.pid,
+            "process_name": result.name,
+            "risk_level": result.risk_level.value,
+            "score": result.score,
+            "confidence": result.confidence,
+            "model_version": result.model_version,
+            "detected_at": result.timestamp,
+            "actioned": self._selected.action_taken is not None,
+            "reasons": result.reasons,
         })
 
     # --- action buttons ---
@@ -460,13 +465,17 @@ class _LiveAlertsTab(ttk.Frame):
         sel = self._tree.selection()
         if not sel or not self._selected:
             return
-        v = self._tree.item(sel[0])["values"]
+        result = self._selected.result
         _DetailPopup(self, {
-            "pid": v[1], "process_name": v[2], "risk_level": v[3],
-            "score": float(str(v[4]).rstrip("%")) / 100,
-            "confidence": 0.0, "detected_at": time.time(),
-            "actioned": False,
-            "reasons": self._selected.result.reasons if self._selected else [],
+            "pid": result.pid,
+            "process_name": result.name,
+            "risk_level": result.risk_level.value,
+            "score": result.score,
+            "confidence": result.confidence,
+            "model_version": result.model_version,
+            "detected_at": result.timestamp,
+            "actioned": self._selected.action_taken is not None,
+            "reasons": result.reasons,
         })
 
     def _copy_process_name(self) -> None:
@@ -1610,13 +1619,194 @@ class _TrainModelTab(ttk.Frame):
             )
             return
 
-        self._btn_train.config(state=tk.NORMAL)
+        # Auto-train personalized model immediately
+        self._csv_path = csv_out
         messagebox.showinfo(
             "Recording Complete",
             f"✅  Captured {count} processes over {hrs}h {mins}m.\n\n"
-            f"CSV saved to:\n{csv_out}\n\n"
-            f"Click  🎓 Train Personalized Model  when ready.",
+            f"Now automatically training personalized model...\n"
+            f"This will take 30-60 seconds.",
         )
+        
+        # Trigger automatic training
+        self._auto_train_personalized(csv_out, count)
+
+    def _auto_train_personalized(self, user_csv: Path, count: int) -> None:
+        """
+        Automatically combine user behavior with universal safe dataset
+        and train personalized model immediately after recording stops.
+        Replaces the main detector model so Live Alerts use it immediately.
+        """
+        import pandas as pd
+        from pathlib import Path as _P
+        
+        # Path to universal safe dataset
+        universal_csv = _P(__file__).parent.parent.parent / "data" / "universal_safe_dataset.csv"
+        
+        if not universal_csv.exists():
+            logger.warning(f"Universal safe dataset not found: {universal_csv}")
+            # Fall back to just using user's behavior
+            self._training = True
+            self._btn_train.config(state=tk.DISABLED)
+            self._btn_start.config(state=tk.DISABLED)
+            self._progress_var.set(0.0)
+            self._progress_bar.pack(anchor="w", pady=(0, 8), fill=tk.X)
+            threading.Thread(
+                target=self._training_thread,
+                args=(user_csv,),
+                name="PersonalizedTrainer",
+                daemon=True,
+            ).start()
+            return
+        
+        try:
+            # Combine user behavior with universal safe dataset
+            logger.info(f"Combining {user_csv} with {universal_csv}")
+            
+            user_df = pd.read_csv(user_csv)
+            universal_df = pd.read_csv(universal_csv)
+            
+            # Combine both datasets
+            combined_df = pd.concat([user_df, universal_df], ignore_index=True)
+            
+            # Save combined dataset
+            combined_csv = user_csv.parent / f"combined_safe_behavior_{time.strftime('%Y%m%d_%H%M%S')}.csv"
+            combined_df.to_csv(combined_csv, index=False)
+            
+            logger.info(f"Combined dataset saved: {combined_csv} ({len(combined_df)} total rows)")
+            
+            # Now train with combined dataset and replace main model
+            self._csv_path = combined_csv
+            self._training = True
+            self._btn_train.config(state=tk.DISABLED)
+            self._btn_start.config(state=tk.DISABLED)
+            self._progress_var.set(0.0)
+            self._progress_bar.pack(anchor="w", pady=(0, 8), fill=tk.X)
+            self._lbl_train_status.config(
+                text="Training personalized model...", fg=C["text_dim"]
+            )
+            
+            # Run training in background, replacing main model
+            threading.Thread(
+                target=self._auto_training_thread,
+                args=(combined_csv,),
+                name="AutoPersonalizedTrainer",
+                daemon=True,
+            ).start()
+            
+        except Exception as exc:
+            logger.error(f"Auto-train combination failed: {exc}", exc_info=True)
+            messagebox.showerror(
+                "Auto-Training Failed",
+                f"Could not combine datasets:\n{exc}\n\n"
+                f"Your behavior CSV is still saved at:\n{user_csv}",
+            )
+
+    def _auto_training_thread(self, csv_path: Path) -> None:
+        """
+        Training thread specifically for auto-training after recording.
+        Saves the model as the MAIN detector model (not _personalized).
+        """
+        try:
+            import sys
+            from pathlib import Path as _P
+            proj_root = _P(__file__).parent.parent.parent
+            if str(proj_root) not in sys.path:
+                sys.path.insert(0, str(proj_root))
+            from tools.train_model import train_personalized
+
+            def _progress(msg: str, fraction: float) -> None:
+                if hasattr(self, "_root_ref") and self._root_ref:
+                    self._root_ref.after(
+                        0,
+                        lambda m=msg, f=fraction: self._update_progress(m, f),
+                    )
+
+            # Save as main model (not _personalized)
+            main_model_path = proj_root / "models" / "keylogger_detector.joblib"
+            
+            result = train_personalized(
+                csv_path=csv_path,
+                output_path=main_model_path,  # Replace main model
+                progress_callback=_progress,
+            )
+
+            if hasattr(self, "_root_ref") and self._root_ref:
+                self._root_ref.after(0, lambda r=result: self._on_auto_training_done(r))
+            else:
+                self._on_auto_training_done(result)
+
+        except Exception as exc:
+            err_result = {
+                "success": False,
+                "error": str(exc),
+                "accuracy": 0.0,
+                "cv_f1_mean": 0.0,
+                "n_real_safe": 0,
+                "n_synthetic": 0,
+                "n_total": 0,
+            }
+            if hasattr(self, "_root_ref") and self._root_ref:
+                self._root_ref.after(
+                    0, lambda r=err_result: self._on_auto_training_done(r)
+                )
+
+    def _on_auto_training_done(self, result: dict) -> None:
+        """Called when auto-training completes. Reloads the model immediately."""
+        self._training = False
+        self._btn_start.config(state=tk.NORMAL)
+
+        if not result.get("success"):
+            self._progress_bar.pack_forget()
+            self._lbl_train_status.config(
+                text=f"❌  Training failed: {result.get('error', 'Unknown error')}",
+                fg=C["malicious"],
+            )
+            messagebox.showerror(
+                "Training Failed",
+                f"Could not train the personalized model:\n\n"
+                f"{result.get('error', 'Unknown error')}",
+            )
+            return
+
+        # Training succeeded
+        self._progress_var.set(100.0)
+        self._lbl_train_status.config(
+            text="✅  Training complete! Model is now active.", fg=C["safe"]
+        )
+
+        accuracy   = result.get("accuracy", 0.0)
+        n_real     = result.get("n_real_safe", 0)
+        n_total    = result.get("n_total", 0)
+
+        self._lbl_res_accuracy.config(text=f"{accuracy:.1%}")
+        self._lbl_res_samples.config(
+            text=f"{n_total} total  ({n_real} real SAFE + {n_total - n_real} synthetic)"
+        )
+        self._lbl_res_fp.config(text="~80–90%")
+        self._results_frame.pack(fill=tk.X, pady=(12, 0))
+
+        # Reload the model in Live Alerts classifier
+        try:
+            clf = self._get_classifier()
+            if clf is not None:
+                clf.reload_model()  # Reload main model, not personalized
+        except Exception as exc:
+            logger.error(f"Failed to reload model: {exc}")
+
+        # Refresh model status
+        self._refresh_model_status()
+
+        messagebox.showinfo(
+            "Model Trained & Active! 🎉",
+            f"Your personalized model is now running!\n\n"
+            f"  Accuracy      : {accuracy:.1%}\n"
+            f"  Your apps     : {n_real}\n"
+            f"  Total trained : {n_total}\n\n"
+            f"Live Alerts will now recognize your programs\n"
+            f"and show dramatically fewer false positives.",
+        )
+
 
     def _on_train(self) -> None:
         """User clicked 🎓 Train Personalized Model."""
@@ -1918,7 +2108,10 @@ class _BehavioralAnalysisTab(ttk.Frame):
         self._engine = engine
         self._db = db_logger
         self._root_ref = None
-        self._available = engine is not None and engine.is_available
+        # An engine being provided is enough to show the full UI.
+        # Recorder availability is checked after start() so we don't gate on
+        # the pre-start state (recorders report unavailable until started).
+        self._available = engine is not None
         self._last_anomaly = None
         self._last_metrics = None
         self._anomaly_start_ts: Optional[float] = None
@@ -1981,9 +2174,10 @@ class _BehavioralAnalysisTab(ttk.Frame):
                  bg=C["surface"], fg=C["text"],
                  font=("Segoe UI", 15, "bold")).pack(pady=(0, 12))
         tk.Label(frm, text=(
-            "The pynput library could not be initialized for keyboard/mouse listening.\n\n"
-            "To enable behavioral biometrics, install pynput:\n"
-            "    pip install pynput==1.7.6\n\n"
+            "The behavioral analysis engine could not be initialized.\n\n"
+            "This can happen if the required libraries failed to load.\n"
+            "Check the log file for details:\n"
+            "    %LOCALAPPDATA%\\KeyloggerDetector\\logs\\detector.log\n\n"
             "Then restart the application."
         ), bg=C["surface"], fg=C["text_dim"],
             font=("Segoe UI", 10), justify=tk.LEFT).pack()

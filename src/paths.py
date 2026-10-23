@@ -94,6 +94,27 @@ def get_user_data_root() -> Path:
 # Path resolution helpers
 # ---------------------------------------------------------------------------
 
+def get_bundled_path(*subpath_parts: str) -> Optional[Path]:
+    """
+    Get path to a bundled file in the PyInstaller temp folder.
+    Returns None if not frozen or file doesn't exist.
+    
+    Use this for READ-ONLY bundled files like the pre-trained model.
+    """
+    if not is_frozen():
+        # In dev mode, return project root path
+        root = Path(__file__).parent.parent.resolve()
+        path = root.joinpath(*subpath_parts)
+        return path if path.exists() else None
+    
+    meipass = get_meipass()
+    if not meipass:
+        return None
+    
+    path = meipass.joinpath(*subpath_parts)
+    return path if path.exists() else None
+
+
 def get_data_path(*subpath_parts: str) -> Path:
     """
     Build an absolute path under the user data root.
@@ -157,7 +178,11 @@ def get_quarantine_dir() -> Path:
 # Defaults used by the pipeline
 # ---------------------------------------------------------------------------
 
-DEFAULT_MODEL_PATH               = get_data_path("models", "keylogger_detector.joblib")
+# Try bundled model first (for fresh installs), then user data (for trained models)
+_bundled_model = get_bundled_path("models", "keylogger_detector.joblib")
+DEFAULT_MODEL_PATH = _bundled_model if _bundled_model else get_data_path("models", "keylogger_detector.joblib")
+
+# Personalized model is always in user data (created by training)
 DEFAULT_MODEL_PATH_PERSONALIZED  = get_data_path("models", "keylogger_detector_personalized.joblib")
 
 DEFAULT_DB_PATH                  = get_data_path("logs", "keylogger_events.db")

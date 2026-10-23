@@ -40,10 +40,20 @@ def _load_dotenv_robust() -> str:
     except ImportError:
         return ""
 
+    # When frozen as .exe, sys.executable is the .exe path itself.
+    # The persistent user-data dir is %LOCALAPPDATA%\KeyloggerDetector\.
+    _exe_dir = Path(sys.executable).parent if getattr(sys, "frozen", False) else None
+    _user_data_dir = (
+        Path.home() / "AppData" / "Local" / "KeyloggerDetector"
+        if getattr(sys, "frozen", False)
+        else None
+    )
+
     candidates = [
-        Path(__file__).resolve().parent.parent / ".env",   # project root
-        Path.cwd() / ".env",                               # current directory
-        Path(sys.executable).parent / ".env" if getattr(sys, "frozen", False) else None,
+        Path(__file__).resolve().parent.parent / ".env",   # project root (dev mode)
+        Path.cwd() / ".env",                               # current working directory
+        _exe_dir / ".env" if _exe_dir else None,           # same folder as the .exe
+        _user_data_dir / ".env" if _user_data_dir else None,  # persistent user data dir
     ]
     for c in candidates:
         if c and c.exists():

@@ -1,41 +1,80 @@
 {
   "_comment": "Confirmed multi-modal behavioral snapshots (saved via 'This Was Me').",
   "_privacy": "Only timing & motion dynamics stored. No screen content or key characters.",
-  "last_confirmed": "2026-09-30T21:04:41.923626",
-  "total_confirmations": 2,
+  "last_confirmed": "2026-10-23T17:30:45.695549",
+  "total_confirmations": 3,
   "latest_session": {
-    "timestamp": "2026-09-30T21:04:41.923626",
-    "keystroke_count": 98,
-    "wpm": 19.6,
-    "dwell_ms": 227.87,
-    "flight_ms": 595.18,
-    "consistency_stddev": 511.23,
-    "mouse_speed_pxsec": 141.55,
-    "mouse_curvature": 1.2,
-    "mouse_clicks": 2
+    "timestamp": "2026-10-23T17:30:45.695549",
+    "keystroke_count": 120,
+    "wpm": 24.0,
+    "dwell_ms": 168.76,
+    "flight_ms": 501.98,
+    "consistency_stddev": 430.41,
+    "mouse_speed_pxsec": 464.96,
+    "mouse_curvature": 1.4,
+    "mouse_clicks": 1,
+    "anomaly_assessment": {
+      "similarity_score": 84.4,
+      "keyboard_similarity": 100.0,
+      "mouse_similarity": 79.2,
+      "status": "yellow",
+      "status_label": "\ud83d\udfe1 Slightly Unusual"
+    }
   },
   "history": [
     {
-      "timestamp": "2026-09-30T20:56:37.576905",
-      "keystroke_count": 6,
-      "wpm": 0.0,
-      "dwell_ms": 0.0,
-      "flight_ms": 0.0,
-      "consistency_stddev": 0.0,
-      "mouse_speed_pxsec": 406.69,
-      "mouse_curvature": 1.46,
-      "mouse_clicks": 6
+      "timestamp": "2026-10-22T23:06:52.578724",
+      "keystroke_count": 31,
+      "wpm": 6.2,
+      "dwell_ms": 187.33,
+      "flight_ms": 541.68,
+      "consistency_stddev": 395.0,
+      "mouse_speed_pxsec": 523.52,
+      "mouse_curvature": 1.05,
+      "mouse_clicks": 4,
+      "anomaly_assessment": {
+        "similarity_score": 84.8,
+        "keyboard_similarity": 78.5,
+        "mouse_similarity": 83.6,
+        "status": "yellow",
+        "status_label": "\ud83d\udfe1 Slightly Unusual"
+      }
     },
     {
-      "timestamp": "2026-09-30T21:04:41.923626",
-      "keystroke_count": 98,
-      "wpm": 19.6,
-      "dwell_ms": 227.87,
-      "flight_ms": 595.18,
-      "consistency_stddev": 511.23,
-      "mouse_speed_pxsec": 141.55,
+      "timestamp": "2026-10-23T14:54:17.910269",
+      "keystroke_count": 7,
+      "wpm": 1.4,
+      "dwell_ms": 666.08,
+      "flight_ms": 668.38,
+      "consistency_stddev": 0.0,
+      "mouse_speed_pxsec": 14.49,
       "mouse_curvature": 1.2,
-      "mouse_clicks": 2
+      "mouse_clicks": 0,
+      "anomaly_assessment": {
+        "similarity_score": 63.6,
+        "keyboard_similarity": 100.0,
+        "mouse_similarity": 51.5,
+        "status": "orange",
+        "status_label": "\u26a0\ufe0f Suspicious Activity"
+      }
+    },
+    {
+      "timestamp": "2026-10-23T17:30:45.695549",
+      "keystroke_count": 120,
+      "wpm": 24.0,
+      "dwell_ms": 168.76,
+      "flight_ms": 501.98,
+      "consistency_stddev": 430.41,
+      "mouse_speed_pxsec": 464.96,
+      "mouse_curvature": 1.4,
+      "mouse_clicks": 1,
+      "anomaly_assessment": {
+        "similarity_score": 84.4,
+        "keyboard_similarity": 100.0,
+        "mouse_similarity": 79.2,
+        "status": "yellow",
+        "status_label": "\ud83d\udfe1 Slightly Unusual"
+      }
     }
   ]
 }

@@ -40,14 +40,12 @@ a = Analysis(
     pathex=[str(PROJECT_ROOT)],
     binaries=[],
     datas=[
-        # Note: These files are optional. If they don't exist, they'll be created
-        # at runtime in %LOCALAPPDATA%\KeyloggerDetector\
-        # Only include them if they exist during build:
-        # ('models/*.joblib', 'models'),
-        # ('models/*.json', 'models'),
-        # ('data/typing_baseline.json', 'data'),
-        # ('data/mouse_baseline.json', 'data'),
-        # ('data/whitelist.json', 'data'),
+        # Include ML model and datasets
+        (str(PROJECT_ROOT / 'models' / 'keylogger_detector.joblib'), 'models'),
+        (str(PROJECT_ROOT / 'models' / 'keylogger_detector.json'), 'models'),
+        (str(PROJECT_ROOT / 'data' / 'universal_safe_dataset.csv'), 'data'),
+        # Whitelist (if exists)
+        (str(PROJECT_ROOT / 'data' / 'whitelist.json'), 'data'),
     ],
     hiddenimports=[
         # Core ML dependencies
@@ -102,7 +100,7 @@ a = Analysis(
     excludes=[
         # Exclude heavy unused packages to reduce .exe size and build time
         'matplotlib',
-        'scipy',
+        # 'scipy',  # REMOVED - needed by scikit-learn models!
         'pandas',
         'IPython',
         'jupyter',
@@ -165,7 +163,7 @@ exe = EXE(
     upx=True,                    # Compress with UPX if available (reduces size ~40%)
     upx_exclude=[],
     runtime_tmpdir=None,
-    console=False,               # WINDOWED mode — no console window
+    console=True,                # TEMPORARILY TRUE FOR DEBUGGING
     disable_windowed_traceback=False,
     target_arch=None,
     codesign_identity=None,
